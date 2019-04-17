@@ -13,7 +13,7 @@ function Footer({ ...props }) {
     <footer className={classes.footer}>
       <div className={classes.container}>
         <div className={classes.left}>
-          <List className={classes.list}>
+          {/* <List className={classes.list}>
             <ListItem className={classes.inlineBlock}>
               <a href="#home" className={classes.block}>
                 Home
@@ -34,15 +34,15 @@ function Footer({ ...props }) {
                 Blog
               </a>
             </ListItem>
-          </List>
+          </List> */}
         </div>
         <p className={classes.right}>
           <span>
             &copy; {1900 + new Date().getYear()}{" "}
-            <a href="https://www.creative-tim.com" className={classes.a}>
-              Creative Tim
+            <a href="https://busy.org/@jacobyu" className={classes.a}>
+              Jacob Yu
             </a>
-            , made with love for a better web
+            , made with love for JJM ..
           </span>
         </p>
       </div>
