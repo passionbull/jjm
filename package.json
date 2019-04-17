@@ -1,7 +1,7 @@
 {
   "name": "jjm-holder-dashboard",
   "version": "1.6.0",
-  "description": "Material Dashboard React. Coded by Creative Tim",
+  "description": "JJM Dashboard.",
   "private": false,
   "main": "dist/index.js",
   "dependencies": {
@@ -45,7 +45,7 @@
   "bugs": {
     "url": "https://github.com/creativetimofficial/material-dashboard-react/issues"
   },
-  "homepage": "http://passionbull.github.io/material-dashboard-react/#/dashboard",
+  "homepage": "http://passionbull.github.io/jjm/#/holders",
   "optionalDependencies": {
     "@types/googlemaps": "3.30.16",
     "@types/markerclustererplus": "2.1.33",
