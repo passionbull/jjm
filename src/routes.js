@@ -11,6 +11,7 @@ import Language from "@material-ui/icons/Language";
 import DashboardPage from "views/Dashboard/Dashboard.jsx";
 import UserProfile from "views/UserProfile/UserProfile.jsx";
 import TableList from "views/TableList/TableList.jsx";
+import TableBoard from "views/TableList/Tableboard.jsx";
 import Typography from "views/Typography/Typography.jsx";
 import Icons from "views/Icons/Icons.jsx";
 import Maps from "views/Maps/Maps.jsx";
@@ -21,14 +22,21 @@ import RTLPage from "views/RTLPage/RTLPage.jsx";
 
 const dashboardRoutes = [
   {
-    path: "/dashboard",
-    name: "Dashboard",
-    rtlName: "لوحة القيادة",
-    icon: Dashboard,
-    component: DashboardPage,
+    path: "/holders",
+    name: "Holder List",
+    icon: "content_paste",
+    component: TableBoard,
     layout: "/admin"
   },
   // {
+  //   path: "/dashboard",
+  //   name: "Template",
+  //   rtlName: "لوحة القيادة",
+  //   icon: Dashboard,
+  //   component: DashboardPage,
+  //   layout: "/admin"
+  // },
+ // {
   //   path: "/user",
   //   name: "User Profile",
   //   rtlName: "ملف تعريفي للمستخدم",
@@ -36,14 +44,14 @@ const dashboardRoutes = [
   //   component: UserProfile,
   //   layout: "/admin"
   // },
-  {
-    path: "/table",
-    name: "Table List",
-    rtlName: "قائمة الجدول",
-    icon: "content_paste",
-    component: TableList,
-    layout: "/admin"
-  },
+  // {
+  //   path: "/table",
+  //   name: "Table List",
+  //   rtlName: "قائمة الجدول",
+  //   icon: "content_paste",
+  //   component: TableList,
+  //   layout: "/admin"
+  // },
   // {
   //   path: "/typography",
   //   name: "Typography",

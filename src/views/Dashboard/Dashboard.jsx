@@ -44,11 +44,18 @@ class Dashboard extends React.Component {
   state = {
     value: 0
   };
+
+  componentDidMount() {
+    console.log("componentDidMount");
+  }
+
   handleChange = (event, value) => {
+    console.log("handleChange");
     this.setState({ value });
   };
 
   handleChangeIndex = index => {
+    console.log("handleChangeIndex");
     this.setState({ value: index });
   };
   render() {
