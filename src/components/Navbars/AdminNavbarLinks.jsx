@@ -78,8 +78,8 @@ class HeaderLinks extends React.Component {
     steemConnect.revokeToken(function(err, res) {
       console.log(res);
       localStorage.token = null;
+      this.setState({ sign_in: false });
     });
-    this.setState({ sign_in: false });
   };
 
   checkToken = url => {

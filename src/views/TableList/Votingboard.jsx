@@ -13,7 +13,10 @@ import CardIcon from "components/Card/CardIcon.jsx";
 import CardFooter from "components/Card/CardFooter.jsx";
 import Icon from "@material-ui/core/Icon";
 import Button from "components/CustomButtons/Button.jsx";
+import LinearProgress from "@material-ui/core/LinearProgress";
 // @material-ui/icons
+import AddAlert from "@material-ui/icons/AddAlert";
+
 import Store from "@material-ui/icons/Store";
 import Warning from "@material-ui/icons/Warning";
 import DateRange from "@material-ui/icons/DateRange";
@@ -21,8 +24,13 @@ import LocalOffer from "@material-ui/icons/LocalOffer";
 import Update from "@material-ui/icons/Update";
 import Accessibility from "@material-ui/icons/Accessibility";
 import AttachMoney from "@material-ui/icons/AttachMoney";
+import Snackbar from "components/Snackbar/Snackbar.jsx";
+
 import SSCLoader from "../../presenter/SSCLoader.jsx";
+import steemController from "../../presenter/steemController";
 import dashboardStyle from "assets/jss/material-dashboard-react/views/dashboardStyle.jsx";
+
+var sc = new steemController();
 
 const styles = {
   cardCategoryWhite: {
@@ -59,63 +67,199 @@ class Votingboard extends React.Component {
     tokenInfo: 0,
     holders: [],
     holders_array: [],
-    symbol: "JJM"
+    symbol: "JJM",
+    ActivePostDate: 7,
+    updated: true, tc:false, notiMessage:""
   };
+
+  getWatingList = () => {
+    console.log("getWaitingList");
+    this.setState({ holderCnt: 0, updated: false });
+    var holder_id = 0;
+
+    var postingDate = new Date();
+    postingDate.setDate(postingDate.getDate() - this.state.ActivePostDate);
+    var postingDateShowing = postingDate.toLocaleString();
+    postingDate = postingDate.toISOString().split(".")[0];
+
+    var voterDate = new Date();
+    voterDate.setDate(voterDate.getDate() - 1);
+    var voterDateShowing = voterDate.toLocaleString();
+    voterDate = voterDate.toISOString().split(".")[0];
+
+    var holders = this.state.holders;
+    holders = holders.filter(item => item.balance >= 100);
+
+    this.setState({
+      holders_size: holders.length,
+      postingDateShowing,
+      voterDateShowing
+    });
+    for (const holder of holders) {
+      this.getPostingByBlog(
+        holder.account,
+        "",
+        "",
+        this,
+        holder_id,
+        holders,
+        postingDate,
+        voterDate,
+        0
+      );
+      holder_id = holder_id + 1;
+    }
+  };
+
+  updatedCallback(holders) {
+    var cnt = this.state.holderCnt;
+    cnt = cnt + 1;
+    this.setState({ holderCnt: cnt }, () => {
+      if (cnt === this.state.holders_size) {
+        //filtering
+        holders = holders.filter(item => item.voted !== true);
+        holders = holders.filter(item => item.latest_posting_jjm !== "");
+        holders = holders.filter(item => item.balance >= 100);
+        //shallow copy
+        var holders_array = [];
+        holders_array = holders.map(holder => {
+          var account = holder.account;
+          var rate = (100 * holder.rate).toFixed(3) + "%";
+          var voting_rate = String(holder.voting_rate) + "%";
+          var balance =
+            (1 * holder.balance).toFixed(2) + " " + this.state.symbol;
+          var voted = holder.voted === true ? "true" : "false";
+          var link =
+            "https://busy.org/@" +
+            holder.account +
+            "/" +
+            holder.latest_posting_jjm;
+          var array = [account, rate, voting_rate, balance, link];
+          return array;
+        });
+        console.log("updated", holders);
+        this.setState({ updated: true, holders, holders_array, tc:true,
+        notiMessage:"I've got a list of people who have not been voted."});
+      }
+    });
+  }
+
+  getPostingByBlog(
+    author,
+    start_author = "",
+    start_permlink = "",
+    that,
+    holder_id,
+    holders,
+    startDate,
+    voterDate,
+    c
+  ) {
+    const size = 50;
+    var query = {
+      tag: author,
+      limit: size,
+      start_author: start_author,
+      start_permlink: start_permlink
+    };
+    sc.getDiscussionsByBlog(query).then(function(response) {
+      var length_posts = response.length;
+      var voted = false;
+      var latest_posting_jjm = "";
+      for (const post of response) {
+        if (post.author === query.tag) {
+          var json_meta = JSON.parse(post.json_metadata);
+          var isJJM = json_meta.tags.find(function(a) {
+            return a === "jjm";
+          });
+          if (post.created > voterDate && isJJM === "jjm") {
+            if (voted === false) {
+              voted = post.active_votes.find(function(a) {
+                return a.voter === "virus707";
+              });
+            }
+            if (c === 0) {
+              latest_posting_jjm = post.permlink;
+            }
+            if (voted !== undefined) voted = true;
+            else if (voted === undefined) voted = false;
+            c = c + 1;
+          }
+        }
+      }
+      if (
+        length_posts < size ||
+        response[length_posts - 1].created < startDate
+      ) {
+        if (holders[holder_id].account === author) {
+          holders[holder_id].voted = voted;
+          holders[holder_id].latest_posting_jjm = latest_posting_jjm;
+          console.log("message", holder_id, latest_posting_jjm);
+          that.updatedCallback(holders);
+        } else {
+          console.log("something is wrong.");
+        }
+        return;
+      }
+      var start_author = response[length_posts - 1].author;
+      var start_permlink = response[length_posts - 1].permlink;
+      that.getPostingByBlog(
+        author,
+        start_author,
+        start_permlink,
+        that,
+        holder_id,
+        holders,
+        startDate,
+        voterDate,
+        c
+      );
+    });
+  }
 
   componentDidMount() {
     console.log("componentDidMount");
     var sscLoader = new SSCLoader();
-    sscLoader.getInfo("JJM").then(result => {
-      console.log("result", result);
-      this.setState({ tokenInfo: result });
-    });
     sscLoader.getHolders("JJM").then(holders => {
       console.log("hds", holders);
-      var holders_array = holders.map(holder => {
-        holder.rate = (100 * holder.rate).toFixed(3) + "%";
-        holder.voting_rate = String(holder.voting_rate) + "%";
-        holder.balance =
-          (1 * holder.balance).toFixed(2) + " " + this.state.symbol;
-        var array = Object.values(holder);
-        return array.slice(0, 4);
+      this.setState({ holders },()=>{
+        this.getWatingList();
       });
-      this.setState({ holders, holders_array });
     });
   }
   render() {
     const { classes } = this.props;
     return (
       <div>
-        <Button type="button" color="primary">Voting</Button>
+        <Snackbar
+          place="tc"
+          color="info"
+          icon={AddAlert}
+          message={this.state.notiMessage}
+          open={this.state.tc}
+          closeNotification={() => this.setState({ tc: false })}
+          close
+        />
+
+        <Button
+          type="button"
+          color="primary"
+          disabled={this.state.updated === true ? false : true}
+          onClick={this.actionVoting}
+        >
+          {this.state.updated === true ? "Voting" : "Loading.."}
+        </Button>
+        {this.state.updated === true ? <div> </div> : <LinearProgress />}
         <GridContainer>
-          <GridItem xs={12} sm={6} md={3}>
+          <GridItem xs={12} sm={12} md={6}>
             <Card>
               <CardHeader color="info" stats icon>
                 <CardIcon color="info">
                   <Accessibility />
                 </CardIcon>
-                <p className={classes.cardCategory}>Holders</p>
+                <p className={classes.cardCategory}>Holders waiting voting</p>
                 <h3 className={classes.cardTitle}>
                   {this.state.holders_array.length}
-                </h3>
-              </CardHeader>
-              <CardFooter stats>
-                <div className={classes.stats}>
-                  <Update />
-                  Just Updated
-                </div>
-              </CardFooter>
-            </Card>
-          </GridItem>
-          <GridItem xs={12} sm={6} md={3}>
-            <Card>
-              <CardHeader color="success" stats icon>
-                <CardIcon color="success">
-                  <AttachMoney />
-                </CardIcon>
-                <p className={classes.cardCategory}>Last Price</p>
-                <h3 className={classes.cardTitle}>
-                  {this.state.tokenInfo.lastPrice}
                 </h3>
               </CardHeader>
               <CardFooter stats>
@@ -131,7 +275,7 @@ class Votingboard extends React.Component {
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
             <Card>
-              <CardHeader color="primary">
+              {/* <CardHeader color="primary">
                 <h4 className={classes.tableCardTitleWhite}>Token Info</h4>
                 <p className={classes.tableCardCategoryWhite}>
                   Last: {this.state.tokenInfo.lastPrice} STEEM, 24h Vol:{" "}
@@ -139,31 +283,18 @@ class Votingboard extends React.Component {
                   {this.state.tokenInfo.highestBid} STEEM, Ask:{" "}
                   {this.state.tokenInfo.lowestAsk} STEEM
                 </p>
-              </CardHeader>
+              </CardHeader> */}
               <CardBody>
                 <Table
                   tableHeaderColor="primary"
-                  tableHead={["Account", "Balance", "Stake", "Voting Percent"]}
+                  tableHead={[
+                    "Account",
+                    "Balance",
+                    "Stake",
+                    "Voting Percent",
+                    "Link"
+                  ]}
                   tableData={Object.values(this.state.holders_array)}
-
-                  // tableData={[
-                  //   ["Dakota Rice", "Niger", "Oud-Turnhout", "$36,738"],
-                  //   ["Minerva Hooper", "Curaçao", "Sinaai-Waas", "$23,789"],
-                  //   ["Sage Rodriguez", "Netherlands", "Baileux", "$56,142"],
-                  //   [
-                  //     "Philip Chaney",
-                  //     "Korea, South",
-                  //     "Overland Park",
-                  //     "$38,735"
-                  //   ],
-                  //   [
-                  //     "Doris Greene",
-                  //     "Malawi",
-                  //     "Feldkirchen in Kärnten",
-                  //     "$63,542"
-                  //   ],
-                  //   ["Mason Porter", "Chile", "Gloucester", "$78,615"]
-                  // ]}
                 />
               </CardBody>
             </Card>
