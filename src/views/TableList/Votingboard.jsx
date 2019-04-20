@@ -136,6 +136,7 @@ class Votingboard extends React.Component {
         //filtering
         holders = holders.filter(item => item.voted !== true);
         holders = holders.filter(item => item.latest_posting_jjm !== "");
+        holders = holders.filter(item => item.latest_posting_jjm !== undefined);
         holders = holders.filter(item => item.balance >= 100);
         //shallow copy
         var holders_array = [];
@@ -237,7 +238,13 @@ class Votingboard extends React.Component {
         voterDate,
         c
       );
+    }).catch(function(e) {
+      console.log("error1",e);
+      var cnt = that.state.holderCnt;
+      cnt = cnt + 1;
+      that.setState({ holderCnt: cnt });      
     });
+    
   }
 
   votedReculsive(list, index, length, that) {

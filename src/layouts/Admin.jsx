@@ -16,6 +16,7 @@ import routes from "routes.js";
 import dashboardStyle from "assets/jss/material-dashboard-react/layouts/dashboardStyle.jsx";
 import image from "assets/img/sidebar-2.jpg";
 import logo from "assets/img/reactlogo.png";
+import Tableboard from "views/TableList/Tableboard.jsx";
 
 const switchRoutes = (
   <Switch>
@@ -29,6 +30,19 @@ const switchRoutes = (
           />
         );
       }
+    })}
+  </Switch>
+);
+
+const helloPage = (
+  <Switch>
+    {routes.map((prop, key) => {
+        return (
+          <Route
+          path="/jjm"
+          component={Tableboard}
+          />
+        );
     })}
   </Switch>
 );
@@ -61,7 +75,7 @@ class Dashboard extends React.Component {
     this.setState({ mobileOpen: !this.state.mobileOpen });
   };
   getRoute() {
-    return this.props.location.pathname !== "/jjm/maps";
+    return this.props.location.pathname !== "/jjm";
   }
   resizeFunction = () => {
     if (window.innerWidth >= 960) {
@@ -111,7 +125,7 @@ class Dashboard extends React.Component {
               <div className={classes.container}>{switchRoutes}</div>
             </div>
           ) : (
-            <div className={classes.map}>{switchRoutes}</div>
+            <div className={classes.map}>{helloPage}</div>
           )}
           {this.getRoute() ? <Footer /> : null}
           {/* <FixedPlugin
