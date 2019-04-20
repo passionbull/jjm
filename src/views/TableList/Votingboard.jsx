@@ -29,7 +29,8 @@ import Snackbar from "components/Snackbar/Snackbar.jsx";
 import SSCLoader from "../../presenter/SSCLoader.jsx";
 import steemController from "../../presenter/steemController";
 import dashboardStyle from "assets/jss/material-dashboard-react/views/dashboardStyle.jsx";
-
+import steemConnect from "../../presenter/steemConnect";
+import serverFetcher from "../../presenter/serverFetcher";
 var sc = new steemController();
 
 const styles = {
@@ -69,12 +70,28 @@ class Votingboard extends React.Component {
     holders_array: [],
     symbol: "JJM",
     ActivePostDate: 7,
-    updated: true, tc:false, notiMessage:""
+    updated: true,
+    tc: false,
+    notiMessage: "",
+    prefix_text: [
+      "Congratulations on your decision to become a holder in JJM. Did you know that the daily upvote is increasing for 1% for each 1000JJM you are holding? Get a max of 46% upvote from @virus707's 450K SP which would equal holding 45,000JJM.",
+      "Thank you for considering investing your precious resources in JJM. JJM is a token based on steem-engine.com using a side chain of Steem. With a holding Steem Power of 500K SP owned and bought from @virus707, this SP is used in combination with JJM tokens to upvote, reward and distribute dividends out of the JJM project to JJM token holders.",
+      "Thank you for your continued support towards JJM. For each 1000 JJM you are holding, you can get an additional 1% of upvote. 10,000JJM would give you a 11% daily voting from the 450K SP virus707 account."
+    ],
+    postingDateShowing: "",
+    voterDateShowing: ""
+  };
+
+  actionVoting = () => {
+    var holders = this.state.holders;
+    this.setState({ updated: false }, () => {
+      this.votedReculsive(holders, 0, holders.length, this);
+    });
   };
 
   getWatingList = () => {
     console.log("getWaitingList");
-    this.setState({ holderCnt: 0, updated: false });
+    this.setState({ holderCnt: 0 });
     var holder_id = 0;
 
     var postingDate = new Date();
@@ -138,8 +155,14 @@ class Votingboard extends React.Component {
           return array;
         });
         console.log("updated", holders);
-        this.setState({ updated: true, holders, holders_array, tc:true,
-        notiMessage:"I've got a list of people who have not been voted."});
+        this.setState({
+          updated: true,
+          holders,
+          holders_array,
+          tc: true,
+          notiMessage: "I've got a list of people who have not been voted."
+        });
+        // window.alert('updated!');
       }
     });
   }
@@ -217,12 +240,88 @@ class Votingboard extends React.Component {
     });
   }
 
+  votedReculsive(list, index, length, that) {
+    steemConnect.vote(
+      that.state.steem_account,
+      list[index].account,
+      list[index].latest_posting_jjm,
+      list[index].voting_rate * 100,
+      function(err, res) {
+        console.log("index", index, list[index].account);
+        console.log("voting", err, res);
+        var text =
+          that.state.prefix_text[
+            Math.floor(Math.random() * that.state.prefix_text.length)
+          ];
+        var permlink =
+          "re-" +
+          list[index].latest_posting_jjm +
+          "-" +
+          Math.floor(Date.now() / 1000);
+        var jsonMetadata = {
+          tags: ["jjm"]
+        };
+
+        // console.log( list[index].account, list[index].latest_posting_jjm, that.state.steem_account, permlink, '', text )
+        steemConnect.comment(
+          list[index].account,
+          list[index].latest_posting_jjm,
+          that.state.steem_account,
+          permlink,
+          "",
+          text,
+          jsonMetadata,
+          function(err, res) {
+            console.log("comment", err, res);
+            index = index + 1;
+            if (index === length) {
+              // window.alert('updated!');
+              that.setState({
+                updated: true,
+                tc: true,
+                notiMessage: "Voting is finished."
+              });
+              return;
+            }
+            that.votedReculsive(list, index, length, that);
+          }
+        );
+      }
+    );
+  }
+  getSteemUser() {
+    var token = localStorage.token;
+    console.log("token", token);
+    if (token === null || token === undefined) {
+      this.setState({ sign_in: false });
+    } else {
+      // AccessToken 셋팅
+      steemConnect.setAccessToken(token);
+      // 계정 정보 조회
+      steemConnect
+        .me()
+        .then(({ account }) => {
+          const { profile } = JSON.parse(account.json_metadata);
+          console.log("profile", account);
+          this.setState({ sign_in: true, steem_account: account.name });
+        })
+        .catch(function(e) {
+          localStorage.token = null;
+          this.setState({ sign_in: false });
+        });
+    }
+  }
+
   componentDidMount() {
     console.log("componentDidMount");
+    var sf = new serverFetcher();
+    sf.getPreFixedMessage(this);
+    this.getSteemUser();
     var sscLoader = new SSCLoader();
+    this.setState({ updated: false });
     sscLoader.getHolders("JJM").then(holders => {
       console.log("hds", holders);
-      this.setState({ holders },()=>{
+      this.setState({ holders }, () => {
         this.getWatingList();
       });
     });
@@ -233,7 +332,7 @@ class Votingboard extends React.Component {
       <div>
         <Snackbar
           place="tc"
-          color="info"
+          color="primary"
           icon={AddAlert}
           message={this.state.notiMessage}
           open={this.state.tc}
@@ -247,7 +346,7 @@ class Votingboard extends React.Component {
           disabled={this.state.updated === true ? false : true}
           onClick={this.actionVoting}
         >
-          {this.state.updated === true ? "Voting" : "Loading.."}
+          {this.state.updated === true ? "Start Voting" : "Loading.."}
         </Button>
         {this.state.updated === true ? <div> </div> : <LinearProgress />}
         <GridContainer>
@@ -275,15 +374,14 @@ class Votingboard extends React.Component {
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
             <Card>
-              {/* <CardHeader color="primary">
-                <h4 className={classes.tableCardTitleWhite}>Token Info</h4>
+              <CardHeader color="primary">
+                <h4 className={classes.tableCardTitleWhite}>Holder Info</h4>
                 <p className={classes.tableCardCategoryWhite}>
-                  Last: {this.state.tokenInfo.lastPrice} STEEM, 24h Vol:{" "}
-                  {this.state.tokenInfo.volume} STEEM, Bid:{" "}
-                  {this.state.tokenInfo.highestBid} STEEM, Ask:{" "}
-                  {this.state.tokenInfo.lowestAsk} STEEM
+                  Latest Postings of holders after{" "}
+                  {this.state.postingDateShowing}, have been not voted after{" "}
+                  {this.state.voterDateShowing}.
                 </p>
-              </CardHeader> */}
+              </CardHeader>
               <CardBody>
                 <Table
                   tableHeaderColor="primary"

@@ -59,6 +59,7 @@ class HeaderLinks extends React.Component {
           })
           .catch(function(e) {
             localStorage.token = null;
+            this.setState({ sign_in: false });
           });
       }
     });
