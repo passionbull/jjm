@@ -9,6 +9,7 @@ import Paper from "@material-ui/core/Paper";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
 import Hidden from "@material-ui/core/Hidden";
 import Poppers from "@material-ui/core/Popper";
+import Button2 from '@material-ui/core/Button';
 // @material-ui/icons
 import Person from "@material-ui/icons/Person";
 import Notifications from "@material-ui/icons/Notifications";
@@ -17,12 +18,13 @@ import Search from "@material-ui/icons/Search";
 // core components
 import CustomInput from "components/CustomInput/CustomInput.jsx";
 import Button from "components/CustomButtons/Button.jsx";
-
 import headerLinksStyle from "assets/jss/material-dashboard-react/components/headerLinksStyle.jsx";
+import steemConnect from "../../presenter/steemConnect";
 
 class HeaderLinks extends React.Component {
   state = {
-    open: false
+    open: false,
+    sign_in: false
   };
   handleToggle = () => {
     this.setState(state => ({ open: !state.open }));
@@ -34,6 +36,77 @@ class HeaderLinks extends React.Component {
     }
 
     this.setState({ open: false });
+  };
+
+  componentDidMount() {
+    var link = window.location.href;
+    console.log("nav", link);
+    this.checkToken(link);
+    this.getAsyncToken().then(token => {
+      console.log("token",token);
+      if (token === null || token === undefined) {
+        this.setState({ sign_in: false });
+      } else {
+        // AccessToken 셋팅
+        steemConnect.setAccessToken(token);
+        // 계정 정보 조회
+        steemConnect
+          .me()
+          .then(({ account }) => {
+            const { profile } = JSON.parse(account.json_metadata);
+            console.log("profile", account);
+            this.setState({ sign_in: true, steem_account: account.name });
+          })
+          .catch(function(e) {
+            localStorage.token = null;
+          });
+      }
+    });
+  }
+
+  loginSteemConnect2 = () => {
+    // Go to Commit screen
+    if (this.state.sign_in === false) this.getLoginURL();
+    else this.revokeToken();
+  };
+  getLoginURL = () => {
+    let link = steemConnect.getLoginURL();
+    window.location.href = link;
+  };
+
+  revokeToken = () => {
+    steemConnect.revokeToken(function(err, res) {
+      console.log(res);
+      localStorage.token = null;
+    });
+    this.setState({ sign_in: false });
+  };
+
+  checkToken = url => {
+    if (url.indexOf("?access_token") > -1) {
+      try {
+        const tokens = {};
+        // 콜백 URL에서 accessToken 정보 추출하기
+        let params = url.split("?")[1];
+        params = params.split("&");
+        params.forEach(e => {
+          const [key, val] = e.split("=");
+          tokens[key] = val;
+        });
+        console.log("tokens:", tokens);
+        localStorage.token = tokens.access_token
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+  getAsyncToken = async () => {
+    try {
+      return localStorage.token;
+    } catch (e) {
+      console.warn(e);
+      return null;
+    }
   };
 
   render() {
@@ -57,111 +130,7 @@ class HeaderLinks extends React.Component {
             <Search />
           </Button>
         </div>
-        <Button
-          color={window.innerWidth > 959 ? "transparent" : "white"}
-          justIcon={window.innerWidth > 959}
-          simple={!(window.innerWidth > 959)}
-          aria-label="Dashboard"
-          className={classes.buttonLink}
-        >
-          <Dashboard className={classes.icons} />
-          <Hidden mdUp implementation="css">
-            <p className={classes.linkText}>Dashboard</p>
-          </Hidden>
-        </Button>
-        <div className={classes.manager}>
-          <Button
-            buttonRef={node => {
-              this.anchorEl = node;
-            }}
-            color={window.innerWidth > 959 ? "transparent" : "white"}
-            justIcon={window.innerWidth > 959}
-            simple={!(window.innerWidth > 959)}
-            aria-owns={open ? "menu-list-grow" : null}
-            aria-haspopup="true"
-            onClick={this.handleToggle}
-            className={classes.buttonLink}
-          >
-            <Notifications className={classes.icons} />
-            <span className={classes.notifications}>0</span>
-            <Hidden mdUp implementation="css">
-              <p onClick={this.handleClick} className={classes.linkText}>
-                Notification
-              </p>
-            </Hidden>
-          </Button>
-          <Poppers
-            open={open}
-            anchorEl={this.anchorEl}
-            transition
-            disablePortal
-            className={
-              classNames({ [classes.popperClose]: !open }) +
-              " " +
-              classes.pooperNav
-            }
-          >
-            {({ TransitionProps, placement }) => (
-              <Grow
-                {...TransitionProps}
-                id="menu-list-grow"
-                style={{
-                  transformOrigin:
-                    placement === "bottom" ? "center top" : "center bottom"
-                }}
-              >
-                <Paper>
-                  <ClickAwayListener onClickAway={this.handleClose}>
-                    <MenuList role="menu">
-                      {/* <MenuItem
-                        onClick={this.handleClose}
-                        className={classes.dropdownItem}
-                      >
-                        Mike John responded to your email
-                      </MenuItem>
-                      <MenuItem
-                        onClick={this.handleClose}
-                        className={classes.dropdownItem}
-                      >
-                        You have 5 new tasks
-                      </MenuItem>
-                      <MenuItem
-                        onClick={this.handleClose}
-                        className={classes.dropdownItem}
-                      >
-                        You're now friend with Andrew
-                      </MenuItem>
-                      <MenuItem
-                        onClick={this.handleClose}
-                        className={classes.dropdownItem}
-                      >
-                        Another Notification
-                      </MenuItem>
-                      <MenuItem
-                        onClick={this.handleClose}
-                        className={classes.dropdownItem}
-                      >
-                        Another One
-                      </MenuItem> */}
-                    </MenuList>
-                  </ClickAwayListener>
-                </Paper>
-              </Grow>
-            )}
-          </Poppers>
-        </div>
-        <Button
-          color={window.innerWidth > 959 ? "transparent" : "white"}
-          justIcon={window.innerWidth > 959}
-          simple={!(window.innerWidth > 959)}
-          aria-label="Person"
-          className={classes.buttonLink}
-        >
-          <Person className={classes.icons} />
-          <Hidden mdUp implementation="css">
-            <p className={classes.linkText}>Profile</p>
-          </Hidden>
-        </Button>
+        <Button2 onClick={this.loginSteemConnect2}>{this.state.sign_in === false? 'Sign in':'Sign out'}</Button2>
       </div>
     );
   }

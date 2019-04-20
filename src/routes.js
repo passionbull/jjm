@@ -12,6 +12,7 @@ import DashboardPage from "views/Dashboard/Dashboard.jsx";
 import UserProfile from "views/UserProfile/UserProfile.jsx";
 import TableList from "views/TableList/TableList.jsx";
 import TableBoard from "views/TableList/Tableboard.jsx";
+import VotingBoard from "views/TableList/Votingboard.jsx";
 import Typography from "views/Typography/Typography.jsx";
 import Icons from "views/Icons/Icons.jsx";
 import Maps from "views/Maps/Maps.jsx";
@@ -26,6 +27,13 @@ const dashboardRoutes = [
     name: "Holder List",
     icon: "content_paste",
     component: TableBoard,
+    layout: "/admin"
+  },
+  {
+    path: "/voting",
+    name: "Voting",
+    icon: "Person",
+    component: VotingBoard,
     layout: "/admin"
   },
   // {

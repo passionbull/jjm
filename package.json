@@ -9,6 +9,7 @@
     "@material-ui/icons": "3.0.2",
     "chartist": "0.10.1",
     "classnames": "2.2.6",
+    "dsteem": "^0.11.2",
     "history": "4.7.2",
     "perfect-scrollbar": "1.4.0",
     "prettier": "1.16.4",
@@ -20,7 +21,9 @@
     "react-router-dom": "4.3.1",
     "react-scripts": "2.1.5",
     "react-swipeable-views": "0.13.1",
-    "sscjs": "0.0.7"
+    "sc2-sdk": "^2.0.1",
+    "sscjs": "0.0.7",
+    "steem": "^0.7.4"
   },
   "scripts": {
     "start": "react-scripts start",
