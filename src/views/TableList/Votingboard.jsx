@@ -291,6 +291,7 @@ class Votingboard extends React.Component {
   }
   getSteemUser() {
     var token = localStorage.token;
+    var that = this;
     console.log("token", token);
     if (token === null || token === undefined) {
       this.setState({ sign_in: false });
@@ -307,7 +308,7 @@ class Votingboard extends React.Component {
         })
         .catch(function(e) {
           localStorage.token = null;
-          this.setState({ sign_in: false });
+          that.setState({ sign_in: false });
         });
     }
   }

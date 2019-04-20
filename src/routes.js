@@ -27,14 +27,14 @@ const dashboardRoutes = [
     name: "Holder List",
     icon: "content_paste",
     component: TableBoard,
-    layout: "/admin"
+    layout: "/jjm"
   },
   {
     path: "/voting",
     name: "Voting",
     icon: "Person",
     component: VotingBoard,
-    layout: "/admin"
+    layout: "/jjm"
   },
   // {
   //   path: "/dashboard",

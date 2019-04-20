@@ -20,7 +20,7 @@ import logo from "assets/img/reactlogo.png";
 const switchRoutes = (
   <Switch>
     {routes.map((prop, key) => {
-      if (prop.layout === "/admin") {
+      if (prop.layout === "/jjm") {
         return (
           <Route
             path={prop.layout + prop.path}
@@ -61,7 +61,7 @@ class Dashboard extends React.Component {
     this.setState({ mobileOpen: !this.state.mobileOpen });
   };
   getRoute() {
-    return this.props.location.pathname !== "/admin/maps";
+    return this.props.location.pathname !== "/jjm/maps";
   }
   resizeFunction = () => {
     if (window.innerWidth >= 960) {
