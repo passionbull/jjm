@@ -75,6 +75,7 @@ class Dashboard extends React.Component {
     this.setState({ mobileOpen: !this.state.mobileOpen });
   };
   getRoute() {
+    console.log(this.props);
     return this.props.location.pathname !== "/jjm";
   }
   resizeFunction = () => {

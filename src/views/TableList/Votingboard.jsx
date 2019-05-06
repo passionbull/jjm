@@ -81,17 +81,43 @@ class Votingboard extends React.Component {
       "Thank you for your continued support towards JJM. For each 1000 JJM you are holding, you can get an additional 1% of upvote. 10,000JJM would give you a 11% daily voting from the 450K SP virus707 account."
     ],
     postingDateShowing: "",
-    voterDateShowing: ""
+    voterDateShowing: "",
+    voting_history: []
   };
 
-  test = () => {
+  readVotingHistory = () => {
+    const db = firebase.firestore();
+    var voting_history = [];
+    var that = this;
+
+    db.collection("voting_history")
+      .get()
+      .then(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
+          // doc.data() is never undefined for query doc snapshots
+          console.log(doc.id, " => ", doc.data());
+          var date = doc
+            .data()
+            .date.toDate()
+            .toLocaleString();
+          var rate = doc.data().rate + "";
+          voting_history.push([date, rate]);
+        });
+        console.log(voting_history);
+        that.setState({ voting_history });
+      })
+      .catch(function(error) {
+        console.log("Error getting documents: ", error);
+      });
+  };
+
+  addVotingHistory = _rate => {
     const db = firebase.firestore();
     db.settings({
       timestampsInSnapshots: true
     });
     db.collection("voting_history").add({
-      id: 0,
-      rate: 10,
+      rate: _rate,
       date: new Date()
     });
   };
@@ -341,17 +367,18 @@ class Votingboard extends React.Component {
 
   componentDidMount() {
     console.log("componentDidMount");
-    var sf = new serverFetcher();
-    sf.getPreFixedMessage(this);
-    this.getSteemUser();
-    var sscLoader = new SSCLoader();
-    this.setState({ updated: false });
-    sscLoader.getHolders("JJM").then(holders => {
-      console.log("hds", holders);
-      this.setState({ holders }, () => {
-        this.getWatingList();
-      });
-    });
+    this.readVotingHistory();
+    // var sf = new serverFetcher();
+    // sf.getPreFixedMessage(this);
+    // this.getSteemUser();
+    // var sscLoader = new SSCLoader();
+    // this.setState({ updated: false });
+    // sscLoader.getHolders("JJM").then(holders => {
+    //   console.log("hds", holders);
+    //   this.setState({ holders }, () => {
+    //     this.getWatingList();
+    //   });
+    // });
   }
   render() {
     const { classes } = this.props;
@@ -375,10 +402,6 @@ class Votingboard extends React.Component {
         >
           {this.state.updated === true ? "Start Voting" : "Loading.."}
         </Button>
-
-        {/* <Button type="button" color="primary" onClick={this.test}>
-          TEST
-        </Button> */}
 
         {this.state.updated === true ? <div> </div> : <LinearProgress />}
         <GridContainer>
@@ -418,6 +441,23 @@ class Votingboard extends React.Component {
                   Just Updated
                 </div>
               </CardFooter>
+            </Card>
+          </GridItem>
+        </GridContainer>
+
+        <GridContainer>
+          <GridItem xs={12} sm={12} md={12}>
+            <Card>
+              <CardHeader color="success">
+                <h4 className={classes.tableCardTitleWhite}>Voting History</h4>
+              </CardHeader>
+              <CardBody>
+                <Table
+                  tableHeaderColor="success"
+                  tableHead={["Voting Date", "Voting percent"]}
+                  tableData={Object.values(this.state.voting_history)}
+                />
+              </CardBody>
             </Card>
           </GridItem>
         </GridContainer>
