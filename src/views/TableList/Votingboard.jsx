@@ -368,17 +368,17 @@ class Votingboard extends React.Component {
   componentDidMount() {
     console.log("componentDidMount");
     this.readVotingHistory();
-    // var sf = new serverFetcher();
-    // sf.getPreFixedMessage(this);
-    // this.getSteemUser();
-    // var sscLoader = new SSCLoader();
-    // this.setState({ updated: false });
-    // sscLoader.getHolders("JJM").then(holders => {
-    //   console.log("hds", holders);
-    //   this.setState({ holders }, () => {
-    //     this.getWatingList();
-    //   });
-    // });
+    var sf = new serverFetcher();
+    sf.getPreFixedMessage(this);
+    this.getSteemUser();
+    var sscLoader = new SSCLoader();
+    this.setState({ updated: false });
+    sscLoader.getHolders("JJM").then(holders => {
+      console.log("hds", holders);
+      this.setState({ holders }, () => {
+        this.getWatingList();
+      });
+    });
   }
   render() {
     const { classes } = this.props;

@@ -76,7 +76,7 @@ class Dashboard extends React.Component {
   };
   getRoute() {
     console.log(this.props);
-    return this.props.location.pathname !== "/jjm";
+    return (this.props.location.pathname !== "/jjm" || this.props.location.pathname !== "/jjm/");
   }
   resizeFunction = () => {
     if (window.innerWidth >= 960) {
