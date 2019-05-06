@@ -69,6 +69,7 @@ class Votingboard extends React.Component {
     tokenInfo: 0,
     holders: [],
     holders_array: [],
+    sum_holders_voting_rate: 0,
     symbol: "JJM",
     ActivePostDate: 7,
     updated: true,
@@ -92,9 +93,8 @@ class Votingboard extends React.Component {
       id: 0,
       rate: 10,
       date: new Date()
-    });          
+    });
   };
-
 
   actionVoting = () => {
     var holders = this.state.holders;
@@ -154,10 +154,13 @@ class Votingboard extends React.Component {
         holders = holders.filter(item => item.balance >= 100);
         //shallow copy
         var holders_array = [];
+        var sum_holders_voting_rate = 0;
         holders_array = holders.map(holder => {
           var account = holder.account;
           var rate = (100 * holder.rate).toFixed(3) + "%";
           var voting_rate = String(holder.voting_rate) + "%";
+          sum_holders_voting_rate =
+            sum_holders_voting_rate + holder.voting_rate;
           var balance =
             (1 * holder.balance).toFixed(2) + " " + this.state.symbol;
           var voted = holder.voted === true ? "true" : "false";
@@ -174,6 +177,7 @@ class Votingboard extends React.Component {
           updated: true,
           holders,
           holders_array,
+          sum_holders_voting_rate,
           tc: true,
           notiMessage: "I've got a list of people who have not been voted."
         });
@@ -200,65 +204,66 @@ class Votingboard extends React.Component {
       start_author: start_author,
       start_permlink: start_permlink
     };
-    sc.getDiscussionsByBlog(query).then(function(response) {
-      var length_posts = response.length;
-      var voted = false;
-      var latest_posting_jjm = "";
-      for (const post of response) {
-        if (post.author === query.tag) {
-          var json_meta = JSON.parse(post.json_metadata);
-          var isJJM = json_meta.tags.find(function(a) {
-            return a === "jjm";
-          });
-          if (post.created > voterDate && isJJM === "jjm") {
-            if (voted === false) {
-              voted = post.active_votes.find(function(a) {
-                return a.voter === "virus707";
-              });
+    sc.getDiscussionsByBlog(query)
+      .then(function(response) {
+        var length_posts = response.length;
+        var voted = false;
+        var latest_posting_jjm = "";
+        for (const post of response) {
+          if (post.author === query.tag) {
+            var json_meta = JSON.parse(post.json_metadata);
+            var isJJM = json_meta.tags.find(function(a) {
+              return a === "jjm";
+            });
+            if (post.created > voterDate && isJJM === "jjm") {
+              if (voted === false) {
+                voted = post.active_votes.find(function(a) {
+                  return a.voter === "virus707";
+                });
+              }
+              if (c === 0) {
+                latest_posting_jjm = post.permlink;
+              }
+              if (voted !== undefined) voted = true;
+              else if (voted === undefined) voted = false;
+              c = c + 1;
             }
-            if (c === 0) {
-              latest_posting_jjm = post.permlink;
-            }
-            if (voted !== undefined) voted = true;
-            else if (voted === undefined) voted = false;
-            c = c + 1;
           }
         }
-      }
-      if (
-        length_posts < size ||
-        response[length_posts - 1].created < startDate
-      ) {
-        if (holders[holder_id].account === author) {
-          holders[holder_id].voted = voted;
-          holders[holder_id].latest_posting_jjm = latest_posting_jjm;
-          console.log("message", holder_id, latest_posting_jjm);
-          that.updatedCallback(holders);
-        } else {
-          console.log("something is wrong.");
+        if (
+          length_posts < size ||
+          response[length_posts - 1].created < startDate
+        ) {
+          if (holders[holder_id].account === author) {
+            holders[holder_id].voted = voted;
+            holders[holder_id].latest_posting_jjm = latest_posting_jjm;
+            console.log("message", holder_id, latest_posting_jjm);
+            that.updatedCallback(holders);
+          } else {
+            console.log("something is wrong.");
+          }
+          return;
         }
-        return;
-      }
-      var start_author = response[length_posts - 1].author;
-      var start_permlink = response[length_posts - 1].permlink;
-      that.getPostingByBlog(
-        author,
-        start_author,
-        start_permlink,
-        that,
-        holder_id,
-        holders,
-        startDate,
-        voterDate,
-        c
-      );
-    }).catch(function(e) {
-      console.log("error1",e);
-      var cnt = that.state.holderCnt;
-      cnt = cnt + 1;
-      that.setState({ holderCnt: cnt });      
-    });
-    
+        var start_author = response[length_posts - 1].author;
+        var start_permlink = response[length_posts - 1].permlink;
+        that.getPostingByBlog(
+          author,
+          start_author,
+          start_permlink,
+          that,
+          holder_id,
+          holders,
+          startDate,
+          voterDate,
+          c
+        );
+      })
+      .catch(function(e) {
+        console.log("error1", e);
+        var cnt = that.state.holderCnt;
+        cnt = cnt + 1;
+        that.setState({ holderCnt: cnt });
+      });
   }
 
   votedReculsive(list, index, length, that) {
@@ -338,15 +343,15 @@ class Votingboard extends React.Component {
     console.log("componentDidMount");
     var sf = new serverFetcher();
     sf.getPreFixedMessage(this);
-    // this.getSteemUser();
-    // var sscLoader = new SSCLoader();
-    // this.setState({ updated: false });
-    // sscLoader.getHolders("JJM").then(holders => {
-    //   console.log("hds", holders);
-    //   this.setState({ holders }, () => {
-    //     this.getWatingList();
-    //   });
-    // });
+    this.getSteemUser();
+    var sscLoader = new SSCLoader();
+    this.setState({ updated: false });
+    sscLoader.getHolders("JJM").then(holders => {
+      console.log("hds", holders);
+      this.setState({ holders }, () => {
+        this.getWatingList();
+      });
+    });
   }
   render() {
     const { classes } = this.props;
@@ -371,17 +376,13 @@ class Votingboard extends React.Component {
           {this.state.updated === true ? "Start Voting" : "Loading.."}
         </Button>
 
-        <Button
-          type="button"
-          color="primary"
-          onClick={this.test}
-        >
-        TEST
-        </Button>
+        {/* <Button type="button" color="primary" onClick={this.test}>
+          TEST
+        </Button> */}
 
         {this.state.updated === true ? <div> </div> : <LinearProgress />}
         <GridContainer>
-          <GridItem xs={12} sm={12} md={6}>
+          <GridItem xs={12} sm={6} md={3}>
             <Card>
               <CardHeader color="info" stats icon>
                 <CardIcon color="info">
@@ -406,9 +407,9 @@ class Votingboard extends React.Component {
                 <CardIcon color="info">
                   <Accessibility />
                 </CardIcon>
-                <p className={classes.cardCategory}>Holders</p>
+                <p className={classes.cardCategory}>Sum of Voting Percent</p>
                 <h3 className={classes.cardTitle}>
-                  {1000}%
+                  {this.state.sum_holders_voting_rate}%
                 </h3>
               </CardHeader>
               <CardFooter stats>
@@ -418,7 +419,7 @@ class Votingboard extends React.Component {
                 </div>
               </CardFooter>
             </Card>
-          </GridItem>          
+          </GridItem>
         </GridContainer>
 
         <GridContainer>
