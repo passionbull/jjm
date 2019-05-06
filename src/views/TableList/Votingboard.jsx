@@ -31,6 +31,7 @@ import steemController from "../../presenter/steemController";
 import dashboardStyle from "assets/jss/material-dashboard-react/views/dashboardStyle.jsx";
 import steemConnect from "../../presenter/steemConnect";
 import serverFetcher from "../../presenter/serverFetcher";
+import firebase from "../../presenter/Firestore";
 var sc = new steemController();
 
 const styles = {
@@ -81,6 +82,19 @@ class Votingboard extends React.Component {
     postingDateShowing: "",
     voterDateShowing: ""
   };
+
+  test = () => {
+    const db = firebase.firestore();
+    db.settings({
+      timestampsInSnapshots: true
+    });
+    db.collection("voting_history").add({
+      id: 0,
+      rate: 10,
+      date: new Date()
+    });          
+  };
+
 
   actionVoting = () => {
     var holders = this.state.holders;
@@ -152,7 +166,7 @@ class Votingboard extends React.Component {
             holder.account +
             "/" +
             holder.latest_posting_jjm;
-          var array = [account, rate, voting_rate, balance, link];
+          var array = [account, balance, rate, voting_rate, link];
           return array;
         });
         console.log("updated", holders);
@@ -324,15 +338,15 @@ class Votingboard extends React.Component {
     console.log("componentDidMount");
     var sf = new serverFetcher();
     sf.getPreFixedMessage(this);
-    this.getSteemUser();
-    var sscLoader = new SSCLoader();
-    this.setState({ updated: false });
-    sscLoader.getHolders("JJM").then(holders => {
-      console.log("hds", holders);
-      this.setState({ holders }, () => {
-        this.getWatingList();
-      });
-    });
+    // this.getSteemUser();
+    // var sscLoader = new SSCLoader();
+    // this.setState({ updated: false });
+    // sscLoader.getHolders("JJM").then(holders => {
+    //   console.log("hds", holders);
+    //   this.setState({ holders }, () => {
+    //     this.getWatingList();
+    //   });
+    // });
   }
   render() {
     const { classes } = this.props;
@@ -356,6 +370,15 @@ class Votingboard extends React.Component {
         >
           {this.state.updated === true ? "Start Voting" : "Loading.."}
         </Button>
+
+        <Button
+          type="button"
+          color="primary"
+          onClick={this.test}
+        >
+        TEST
+        </Button>
+
         {this.state.updated === true ? <div> </div> : <LinearProgress />}
         <GridContainer>
           <GridItem xs={12} sm={12} md={6}>
@@ -377,6 +400,25 @@ class Votingboard extends React.Component {
               </CardFooter>
             </Card>
           </GridItem>
+          <GridItem xs={12} sm={6} md={3}>
+            <Card>
+              <CardHeader color="info" stats icon>
+                <CardIcon color="info">
+                  <Accessibility />
+                </CardIcon>
+                <p className={classes.cardCategory}>Holders</p>
+                <h3 className={classes.cardTitle}>
+                  {1000}%
+                </h3>
+              </CardHeader>
+              <CardFooter stats>
+                <div className={classes.stats}>
+                  <Update />
+                  Just Updated
+                </div>
+              </CardFooter>
+            </Card>
+          </GridItem>          
         </GridContainer>
 
         <GridContainer>

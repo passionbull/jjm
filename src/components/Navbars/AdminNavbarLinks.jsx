@@ -28,6 +28,7 @@ class HeaderLinks extends React.Component {
 
   componentDidMount() {
     var link = window.location.href;
+    var that = this;
     console.log("nav", link);
     this.checkToken(link);
     this.getAsyncToken().then(token => {
@@ -42,11 +43,11 @@ class HeaderLinks extends React.Component {
           .me()
           .then(({ account }) => {
             console.log("profile", account);
-            this.setState({ sign_in: true, steem_account: account.name });
+            that.setState({ sign_in: true, steem_account: account.name });
           })
           .catch(function() {
             localStorage.token = null;
-            this.setState({ sign_in: false });
+            that.setState({ sign_in: false });
           });
       }
     });

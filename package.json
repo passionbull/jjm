@@ -10,6 +10,7 @@
     "chartist": "0.10.1",
     "classnames": "2.2.6",
     "dsteem": "^0.11.2",
+    "firebase": "^5.11.1",
     "history": "4.7.2",
     "perfect-scrollbar": "1.4.0",
     "prettier": "1.16.4",
