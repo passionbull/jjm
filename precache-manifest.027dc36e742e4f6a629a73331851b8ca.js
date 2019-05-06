@@ -4,7 +4,7 @@ self.__precacheManifest = [
     "url": "/jjm/static/media/sidebar-2.310509c9.jpg"
   },
   {
-    "revision": "26cf060b616937f5abc0",
+    "revision": "009501dc2bd906516276",
     "url": "/jjm/static/css/main.8717e54f.chunk.css"
   },
   {
@@ -20,8 +20,8 @@ self.__precacheManifest = [
     "url": "/jjm/static/js/2.1f4b160b.chunk.js"
   },
   {
-    "revision": "26cf060b616937f5abc0",
-    "url": "/jjm/static/js/main.26cf060b.chunk.js"
+    "revision": "009501dc2bd906516276",
+    "url": "/jjm/static/js/main.009501dc.chunk.js"
   },
   {
     "revision": "8e9f0a3c5578a20733d5bad0e51c91fb",
@@ -40,7 +40,7 @@ self.__precacheManifest = [
     "url": "/jjm/static/css/2.0a81bf2c.chunk.css"
   },
   {
-    "revision": "d455814c0c206def3ccfb6fc4f981b61",
+    "revision": "b6e8ebcf997a1b092e61eca2025866ac",
     "url": "/jjm/index.html"
   }
 ];
