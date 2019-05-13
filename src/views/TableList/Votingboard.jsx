@@ -90,7 +90,7 @@ class Votingboard extends React.Component {
     var voting_history = [];
     var that = this;
 
-    db.collection("voting_history")
+    db.collection("voting_history").orderBy("date","desc").limit(10)
       .get()
       .then(function(querySnapshot) {
         querySnapshot.forEach(function(doc) {
@@ -111,14 +111,14 @@ class Votingboard extends React.Component {
       });
   };
 
-  addVotingHistory = _rate => {
+  addVotingHistory = (_date, _rate) => {
     const db = firebase.firestore();
     db.settings({
       timestampsInSnapshots: true
     });
     db.collection("voting_history").add({
       rate: _rate,
-      date: new Date()
+      date: _date
     });
   };
 
@@ -328,6 +328,11 @@ class Votingboard extends React.Component {
             index = index + 1;
             if (index === length) {
               // window.alert('updated!');
+              var _date = new Date();
+              var voting_history = that.state.voting_history;
+              voting_history.push([_date.toLocaleString(), that.state.sum_holders_voting_rate]);
+              that.setState({ voting_history });
+              that.addVotingHistory(_date, that.state.sum_holders_voting_rate);
               that.setState({
                 updated: true,
                 tc: true,
