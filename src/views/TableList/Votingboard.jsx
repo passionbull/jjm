@@ -427,7 +427,8 @@ class Votingboard extends React.Component {
           <div style={{ marginLeft: "10px" }}>
             <Card>
               <CardBody>
-                When you press the button, everyone will be watching.
+                When you press the button, you will be voting on all the people
+                below.
               </CardBody>
             </Card>
           </div>
