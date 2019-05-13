@@ -90,7 +90,9 @@ class Votingboard extends React.Component {
     var voting_history = [];
     var that = this;
 
-    db.collection("voting_history").orderBy("date","desc").limit(10)
+    db.collection("voting_history")
+      .orderBy("date", "desc")
+      .limit(10)
       .get()
       .then(function(querySnapshot) {
         querySnapshot.forEach(function(doc) {
@@ -101,7 +103,8 @@ class Votingboard extends React.Component {
             .date.toDate()
             .toLocaleString();
           var rate = doc.data().rate + "";
-          voting_history.push([date, rate]);
+          var voter = doc.data().voter;
+          voting_history.push([voter, date, rate]);
         });
         console.log(voting_history);
         that.setState({ voting_history });
@@ -111,12 +114,13 @@ class Votingboard extends React.Component {
       });
   };
 
-  addVotingHistory = (_date, _rate) => {
+  addVotingHistory = (_voter, _date, _rate) => {
     const db = firebase.firestore();
     db.settings({
       timestampsInSnapshots: true
     });
     db.collection("voting_history").add({
+      voter: _voter,
       rate: _rate,
       date: _date
     });
@@ -330,9 +334,16 @@ class Votingboard extends React.Component {
               // window.alert('updated!');
               var _date = new Date();
               var voting_history = that.state.voting_history;
-              voting_history.push([_date.toLocaleString(), that.state.sum_holders_voting_rate]);
+              voting_history.push([
+                _date.toLocaleString(),
+                that.state.sum_holders_voting_rate
+              ]);
               that.setState({ voting_history });
-              that.addVotingHistory(_date, that.state.sum_holders_voting_rate);
+              that.addVotingHistory(
+                that.state.steem_account,
+                _date,
+                that.state.sum_holders_voting_rate
+              );
               that.setState({
                 updated: true,
                 tc: true,
@@ -401,14 +412,26 @@ class Votingboard extends React.Component {
           close
         />
 
-        <Button
-          type="button"
-          color="primary"
-          disabled={this.state.updated === true ? false : true}
-          onClick={this.actionVoting}
-        >
-          {this.state.updated === true ? "Start Voting" : "Loading.."}
-        </Button>
+        <div style={{ display: "flex" }}>
+          <div style={{ marginRight: "10px", marginTop: "30px" }}>
+            <Button
+              type="button"
+              color="primary"
+              disabled={this.state.updated === true ? false : true}
+              onClick={this.actionVoting}
+            >
+              {this.state.updated === true ? "Start Voting" : "Loading.."}
+            </Button>
+          </div>
+
+          <div style={{ marginLeft: "10px" }}>
+            <Card>
+              <CardBody>
+                When you press the button, everyone will be watching.
+              </CardBody>
+            </Card>
+          </div>
+        </div>
 
         {this.state.updated === true ? <div> </div> : <LinearProgress />}
         <GridContainer>
@@ -433,9 +456,9 @@ class Votingboard extends React.Component {
           </GridItem>
           <GridItem xs={12} sm={6} md={3}>
             <Card>
-              <CardHeader color="info" stats icon>
-                <CardIcon color="info">
-                  <Accessibility />
+              <CardHeader color="success" stats icon>
+                <CardIcon color="success">
+                  <AttachMoney />
                 </CardIcon>
                 <p className={classes.cardCategory}>Sum of Voting Percent</p>
                 <h3 className={classes.cardTitle}>
@@ -461,7 +484,7 @@ class Votingboard extends React.Component {
               <CardBody>
                 <Table
                   tableHeaderColor="success"
-                  tableHead={["Voting Date", "Voting percent"]}
+                  tableHead={["Voter", "Voting Date", "Voting percent"]}
                   tableData={Object.values(this.state.voting_history)}
                 />
               </CardBody>
