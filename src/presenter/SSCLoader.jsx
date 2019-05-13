@@ -36,6 +36,7 @@ export default class SSCLoader {
 
   getHolders(symbol) {
     var ssc = this.ssc;
+    var holders_info = [];
     var holders = [];
     return new Promise((resolve, reject) => {
       ssc.find(
@@ -62,6 +63,7 @@ export default class SSCLoader {
             if (maintainer !== undefined)
               sumBalance = sumBalance - maintainer.balance;
           }
+          holders_info.push(sumBalance);
           console.log(sumBalance);
 
           /// calculate rate
@@ -84,7 +86,9 @@ export default class SSCLoader {
             });
           }
           if (err) reject(err);
-          resolve(holders);
+          holders_info.push(holders);
+          
+          resolve(holders_info);
 
         }
       );

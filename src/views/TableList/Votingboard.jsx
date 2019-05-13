@@ -373,8 +373,10 @@ class Votingboard extends React.Component {
     this.getSteemUser();
     var sscLoader = new SSCLoader();
     this.setState({ updated: false });
-    sscLoader.getHolders("JJM").then(holders => {
-      console.log("hds", holders);
+    sscLoader.getHolders("JJM").then(info => {
+      console.log("hds", info);
+      var holders = info[1];
+
       this.setState({ holders }, () => {
         this.getWatingList();
       });

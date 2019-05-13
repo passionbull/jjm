@@ -58,8 +58,13 @@ class Tableboard extends React.Component {
     tokenInfo: 0,
     holders: [],
     holders_array: [],
-    symbol: "JJM"
+    symbol: "JJM",
+    holder_balance_sum: 0
   };
+
+  numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
 
   componentDidMount() {
     console.log("componentDidMount");
@@ -68,8 +73,10 @@ class Tableboard extends React.Component {
       console.log("result", result);
       this.setState({ tokenInfo: result });
     });
-    sscLoader.getHolders("JJM").then(holders => {
-      console.log("hds", holders);
+    sscLoader.getHolders("JJM").then(info => {
+      console.log("hds", info);
+      var holder_balance_sum = info[0];
+      var holders = info[1];
       var holders_array = holders.map(holder => {
         holder.rate = (100 * holder.rate).toFixed(3) + "%";
         holder.voting_rate = String(holder.voting_rate) + "%";
@@ -78,7 +85,7 @@ class Tableboard extends React.Component {
         var array = Object.values(holder);
         return array.slice(0, 4);
       });
-      this.setState({ holders, holders_array });
+      this.setState({ holders, holders_array, holder_balance_sum });
     });
   }
   render() {
@@ -131,11 +138,21 @@ class Tableboard extends React.Component {
             <Card>
               <CardHeader color="primary">
                 <h4 className={classes.tableCardTitleWhite}>Token Info</h4>
-                <p className={classes.tableCardCategoryWhite}>
+                <p className={classes.tableCardTitleWhite}>
                   Last: {this.state.tokenInfo.lastPrice} STEEM, 24h Vol:{" "}
-                  {this.state.tokenInfo.volume} STEEM, Bid:{" "}
+                  {this.numberWithCommas(this.state.tokenInfo.volume*1)} STEEM, Bid:{" "}
                   {this.state.tokenInfo.highestBid} STEEM, Ask:{" "}
                   {this.state.tokenInfo.lowestAsk} STEEM
+                </p>
+                <p className={classes.tableCardTitleWhite}>
+                  Holders : {this.state.holders_array.length}
+                </p>
+                <p className={classes.tableCardTitleWhite}>
+                  Sum of traffic :{" "}
+                  {this.numberWithCommas(
+                    this.state.holder_balance_sum.toFixed(2)
+                  )}{" "}
+                  JJM
                 </p>
               </CardHeader>
               <CardBody>
