@@ -319,41 +319,69 @@ class Votingboard extends React.Component {
         };
 
         // console.log( list[index].account, list[index].latest_posting_jjm, that.state.steem_account, permlink, '', text )
-        steemConnect.comment(
-          list[index].account,
-          list[index].latest_posting_jjm,
-          that.state.steem_account,
-          permlink,
-          "",
-          text,
-          jsonMetadata,
-          function(err, res) {
-            console.log("comment", err, res);
-            index = index + 1;
-            if (index === length) {
-              // window.alert('updated!');
-              var _date = new Date();
-              var voting_history = that.state.voting_history;
-              voting_history.push([
-                _date.toLocaleString(),
-                that.state.sum_holders_voting_rate
-              ]);
-              that.setState({ voting_history });
-              that.addVotingHistory(
-                that.state.steem_account,
-                _date,
-                that.state.sum_holders_voting_rate
-              );
-              that.setState({
-                updated: true,
-                tc: true,
-                notiMessage: "Voting is finished."
-              });
-              return;
+
+        ///////
+        if (list[index].account == "virus707") {
+          steemConnect.comment(
+            list[index].account,
+            list[index].latest_posting_jjm,
+            that.state.steem_account,
+            permlink,
+            "",
+            text,
+            jsonMetadata,
+            function(err, res) {
+              console.log("comment", err, res);
+              index = index + 1;
+              if (index === length) {
+                // window.alert('updated!');
+                var _date = new Date();
+                var voting_history = that.state.voting_history;
+                voting_history.push([
+                  _date.toLocaleString(),
+                  that.state.sum_holders_voting_rate
+                ]);
+                that.setState({ voting_history });
+                that.addVotingHistory(
+                  that.state.steem_account,
+                  _date,
+                  that.state.sum_holders_voting_rate
+                );
+                that.setState({
+                  updated: true,
+                  tc: true,
+                  notiMessage: "Voting is finished."
+                });
+                return;
+              }
+              that.votedReculsive(list, index, length, that);
             }
-            that.votedReculsive(list, index, length, that);
+          );
+        } else {
+          index = index + 1;
+          if (index === length) {
+            // window.alert('updated!');
+            var _date = new Date();
+            var voting_history = that.state.voting_history;
+            voting_history.push([
+              _date.toLocaleString(),
+              that.state.sum_holders_voting_rate
+            ]);
+            that.setState({ voting_history });
+            that.addVotingHistory(
+              that.state.steem_account,
+              _date,
+              that.state.sum_holders_voting_rate
+            );
+            that.setState({
+              updated: true,
+              tc: true,
+              notiMessage: "Voting is finished."
+            });
+            return;
           }
-        );
+          that.votedReculsive(list, index, length, that);
+        }
       }
     );
   }
