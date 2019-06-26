@@ -321,7 +321,7 @@ class Votingboard extends React.Component {
         // console.log( list[index].account, list[index].latest_posting_jjm, that.state.steem_account, permlink, '', text )
 
         ///////
-        if (list[index].account == "virus707") {
+        if (that.state.steem_account == "virus707") {
           steemConnect.comment(
             list[index].account,
             list[index].latest_posting_jjm,
